@@ -9,13 +9,26 @@ import urllib.request
 import urllib.error
 import datetime
 import collections
+import uuid
 
-def download_images(img_urls, dest_dir):
+
+def download_images(img_urls, dest_dir=''):
+    """Downloads the images from the given urls"""
+    if dest_dir and not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    for i, url in enumerate(img_urls):
+        print('Status: Downloading %d of %d: ' % (i + 1, len(img_urls)) + img_urls[i].split(r'/')[-1] + ' ...')
+        # use uuids for filenames for now (in future calculate hash from downloaded file an
+        # check if we need a local copy or if we have one already
+        filename = str(uuid.uuid4())
+        urllib.request.urlretrieve(url, os.path.join(dest_dir, filename))
+
     return
 
 
 def process_website(site, url=''):
-    'Tries to find all image links on a given website (html)'
+    """Tries to find all image links on a given website (html)"""
     urls = []
 
     if site:
@@ -28,8 +41,8 @@ def process_website(site, url=''):
     return urls
 
 
-def get_website(url, path=''):
-    'Tries to download a given website (html)'
+def get_website(url, dest_dir=''):
+    """Tries to download a given website (html)"""
     website = ''
     try:
         print('Status: Downloading website: ', url, ' ...')
@@ -47,6 +60,9 @@ def get_website(url, path=''):
         print('Error: Couldn\'t read the url: ', url)
 
     if website:
+        if dest_dir and not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
         timestamp = str(datetime.datetime.now()).split('.')[0].replace(' ', '_')
         website_filename = timestamp + '_'
 
@@ -57,7 +73,7 @@ def get_website(url, path=''):
 
         try:
             website_filename += '.html'
-            website_file = open(website_filename, mode='wb')
+            website_file = open(os.path.join(dest_dir, website_filename), mode='wb')
             website_file.write(website)
         except IOError:
             print('Error: failed writing website file!')
@@ -110,13 +126,10 @@ def main():
 
     image_urls = []
     for url in urls:
-        image_urls += get_website(url)
+        image_urls += get_website(url, todir_s)
 
-    # TODO remove debug output
-    print('\n'.join(image_urls))
+    download_images(image_urls, todir_s)
 
-    # TODO remove debug output
-    print('Done!')
 
 if __name__ == '__main__':
     main()
