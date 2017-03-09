@@ -19,7 +19,7 @@ def download_images(img_urls, dest_dir=''):
 
     for i, url in enumerate(img_urls):
         print('Status: Downloading %d of %d: ' % (i + 1, len(img_urls)) + img_urls[i].split(r'/')[-1] + ' ...')
-        # use uuids for filenames for now (in future calculate hash from downloaded file an
+        # use uuids for filenames for now (in future calculate hash from downloaded file and
         # check if we need a local copy or if we have one already
         filename = str(uuid.uuid4())
         urllib.request.urlretrieve(url, os.path.join(dest_dir, filename))
@@ -82,9 +82,6 @@ def get_website(url, dest_dir=''):
 
 
 def main():
-    # TODO remove debug output
-    print('Debug version')
-
     args = collections.deque(sys.argv[1:])
 
     if not args:
@@ -119,7 +116,6 @@ def main():
         sys.exit(1)
 
     # TODO remove debug output
-    print('Passed Arguments:')
     print('--todir: ', todir_s)
     print('--filter: ', filter_s)
     print('urls: ', urls)
@@ -128,7 +124,16 @@ def main():
     for url in urls:
         image_urls += get_website(url, todir_s)
 
-    download_images(image_urls, todir_s)
+    if filter_s:
+        # remove all the urls which satisfy the regexpr passed as an arg after --filter
+        try:
+            regexpr = re.compile(filter_s)
+            filtered_urls = [url for url in image_urls if not regexpr.match(url)]
+            download_images(filtered_urls, todir_s)
+        except re.error:
+            print('Error: not a valid regular expression - filter will not be applied!')
+    else:
+        download_images(image_urls, todir_s)
 
 
 if __name__ == '__main__':
