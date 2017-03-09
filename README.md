@@ -1,7 +1,7 @@
 # Image-Downloader
 A python script which downloads all images of a given website(s)
 
-usage: ./img_downloader [--todir dir] [--filter regex] url [url ...]
+__usage: ./img_downloader [--todir dir] [--filter regex] url [url ...]__
 
 ## Script flags
 ##### *--todir* dir
@@ -16,4 +16,4 @@ If the regular expression is not valid, it will be ignored and no images will be
 ### Python version
 python 3.4
 ### File output
-For now the original file names are being discarded - a uuid for each file is generated which serves as the file name - this was done in order to avoid name collisions.
+For now the original file names are being discarded - a uuid is generated for each file which serves as the file name - this was done in order to avoid name collisions.
