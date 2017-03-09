@@ -14,6 +14,9 @@ import uuid
 
 def download_images(img_urls, dest_dir=''):
     """Downloads the images from the given urls"""
+    if not img_urls:
+        print('Status: No images to download.')
+
     if dest_dir and not os.path.exists(dest_dir):
         os.makedirs(dest_dir)
 
@@ -22,8 +25,15 @@ def download_images(img_urls, dest_dir=''):
         # use uuids for filenames for now (in future calculate hash from downloaded file and
         # check if we need a local copy or if we have one already
         filename = str(uuid.uuid4())
-        urllib.request.urlretrieve(url, os.path.join(dest_dir, filename))
 
+        try:
+            urllib.request.urlretrieve(url, os.path.join(dest_dir, filename))
+        except urllib.error.HTTPError:
+            print('Error: Failed to download: ', url)
+        except urllib.error.URLError:
+            print('Error: Url error: ', url)
+        except IOError:
+            print('Error: Failed to save downloaded file - url: ', url)
     return
 
 
@@ -124,14 +134,20 @@ def main():
     for url in urls:
         image_urls += get_website(url, todir_s)
 
+    # print('Status: Found %d images urls ...' % len(image_urls))
+
     if filter_s:
         # remove all the urls which satisfy the regexpr passed as an arg after --filter
         try:
-            regexpr = re.compile(filter_s)
-            filtered_urls = [url for url in image_urls if not regexpr.match(url)]
+            print('Status: Filtering image urls ...')
+            pattern = filter_s.replace(' ', '')  # get rid of spaces
+
+            filtered_urls = [url for url in image_urls if not re.search(pattern, url)]
+
             download_images(filtered_urls, todir_s)
         except re.error:
             print('Error: not a valid regular expression - filter will not be applied!')
+            download_images(image_urls, todir_s)
     else:
         download_images(image_urls, todir_s)
 
